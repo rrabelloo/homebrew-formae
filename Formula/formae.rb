@@ -25,19 +25,18 @@ class Formae < Formula
   end
 
   def post_install
-    # Create plugin directory in user home (same as official installer)
-    plugin_dir = "#{ENV["HOME"]}/.pel/formae/plugins"
-    system "mkdir", "-p", plugin_dir
+    # Use Ruby's FileUtils instead of system commands to avoid sandbox restrictions
+    plugin_dir = Pathname.new(Dir.home)/".pel"/"formae"/"plugins"
+    FileUtils.mkdir_p(plugin_dir)
 
     # Copy plugins to user directory
     plugin_src = libexec/"plugins"
     if plugin_src.exist?
-      Dir.glob("#{plugin_src}/*").each do |f|
-        if File.file?(f) && File.executable?(f)
-          name = File.basename(f)
-          dest = "#{plugin_dir}/#{name}/v#{version}"
-          system "mkdir", "-p", dest
-          system "cp", f, dest
+      plugin_src.children.each do |f|
+        if f.file? && f.executable?
+          dest = plugin_dir/f.basename.to_s/"v#{version}"
+          FileUtils.mkdir_p(dest)
+          FileUtils.cp(f, dest)
         end
       end
     end
@@ -45,17 +44,13 @@ class Formae < Formula
     # Copy resource plugins
     resource_src = libexec/"resource-plugins"
     if resource_src.exist?
-      Dir.glob("#{resource_src}/*").each do |namespace_dir|
-        if File.directory?(namespace_dir)
-          namespace = File.basename(namespace_dir)
-          Dir.glob("#{namespace_dir}/*").each do |version_dir|
-            if File.directory?(version_dir)
-              ver = File.basename(version_dir)
-              dest = "#{plugin_dir}/#{namespace}/#{ver}"
-              system "mkdir", "-p", dest
-              system "cp", "-r", "#{version_dir}/.", dest
-            end
-          end
+      resource_src.children.select(&:directory?).each do |namespace_dir|
+        namespace = namespace_dir.basename.to_s
+        namespace_dir.children.select(&:directory?).each do |version_dir|
+          ver = version_dir.basename.to_s
+          dest = plugin_dir/namespace/ver
+          FileUtils.mkdir_p(dest)
+          FileUtils.cp_r(version_dir.children, dest)
         end
       end
     end
@@ -67,7 +62,6 @@ class Formae < Formula
         ~/.pel/formae/plugins
 
       To get started with Formae:
-
         formae agent start
         formae apply --mode reconcile --watch
         formae inventory resources
