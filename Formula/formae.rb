@@ -1,14 +1,14 @@
 class Formae < Formula
   desc "Infrastructure-as-Code platform built for the future"
   homepage "https://platform.engineering/formae"
-  version "0.82.1"
+  version "0.82.2"
   license "FSL-1.1-ALv2"
 
   depends_on :macos
   depends_on arch: :arm64
 
   url "https://hub.platform.engineering/binaries/pkgs/formae@#{version}_darwin-arm64.tgz"
-  sha256 "c2b8e77b19d6e1856db229a43d03ea9d176eca129a267d9aa2c302b6ed253883"
+  sha256 "8b9c7841860215538cd27a56929b42bc92f56ab1e8e7f3c6e874f63b04481bb6"
 
   def install
     # Install the real binary to libexec
