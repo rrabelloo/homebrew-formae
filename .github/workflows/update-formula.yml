@@ -1,0 +1,44 @@
+name: Update Formula
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "New version (e.g. 0.82.2)"
+        required: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Compute SHA256
+        id: sha
+        run: |
+          URL="https://hub.platform.engineering/binaries/pkgs/formae@${{ github.event.inputs.version }}_darwin-arm64.tgz"
+          SHA=$(curl -sL "$URL" | sha256sum | awk '{print $1}')
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Update formula
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          SHA="${{ steps.sha.outputs.sha }}"
+          sed -i "s/version \".*\"/version \"$VERSION\"/" Formula/formae.rb
+          sed -i "s/sha256 \".*\"/sha256 \"$SHA\"/" Formula/formae.rb
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: update-formae-${{ github.event.inputs.version }}
+          commit-message: "Update formae to ${{ github.event.inputs.version }}"
+          title: "Update formae to ${{ github.event.inputs.version }}"
+          body: |
+            Formula update for formae `${{ github.event.inputs.version }}`.
+
+            - Version: `${{ github.event.inputs.version }}`
+            - SHA256: `${{ steps.sha.outputs.sha }}`
