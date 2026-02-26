@@ -20,8 +20,9 @@ jobs:
       - name: Compute SHA256
         id: sha
         run: |
+          set -o pipefail
           URL="https://hub.platform.engineering/binaries/pkgs/formae@${{ github.event.inputs.version }}_darwin-arm64.tgz"
-          SHA=$(curl -sL "$URL" | sha256sum | awk '{print $1}')
+          SHA=$(curl -fsSL "$URL" | sha256sum | awk '{print $1}')
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
 
       - name: Update formula
