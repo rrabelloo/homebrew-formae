@@ -27,6 +27,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
+          if git ls-remote --exit-code --tags origin "$VERSION" > /dev/null 2>&1; then
+            echo "Tag $VERSION already exists, skipping release."
+            exit 0
+          fi
           git tag "$VERSION"
           git push origin "$VERSION"
           gh release create "$VERSION" \
