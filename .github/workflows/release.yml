@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - Formula/formae.rb
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Extract version from formula
+        id: version
+        run: |
+          VERSION=$(grep -oP '(?<=version ")[^"]+' Formula/formae.rb)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if git ls-remote --exit-code --tags origin "$VERSION" > /dev/null 2>&1; then
+            echo "Tag $VERSION already exists, skipping release."
+            exit 0
+          fi
+          git tag "$VERSION"
+          git push origin "$VERSION"
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --notes "Formula update for formae \`$VERSION\`."
