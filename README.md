@@ -1,4 +1,11 @@
-# Homebrew Tap for Formae
+# Homebrew Tap for Formae (DEPRECATED)
+
+> **WARNING:** This Homebrew tap is no longer maintained.
+> Please use the official installer to install Formae:
+> 
+> ```bash
+> /bin/bash -c "$(curl -fsSL https://hub.platform.engineering/get/formae.sh)"
+> ```
 
 Unofficial Homebrew tap for [Formae](https://platform.engineering/formae), the Infrastructure-as-Code platform.
 
